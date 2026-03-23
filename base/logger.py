@@ -1,28 +1,13 @@
-# base/logger.py
-# -*- coding:utf-8 -*-
-# 导入日志库
 import logging
-# 导入路径操作库
 import os
-# 导入配置类
-from base.config import Config
-# 获取当前文件的绝对路径
-current_file_path = os.path.abspath(__file__)
-# print(f'current_file_path--》{current_file_path}')
-# 获取当前文件所在目录的绝对路径
-current_dir_path = os.path.dirname(current_file_path)
-# print(f'current_dir_path--》{current_dir_path}')
-# 获取项目根目录的绝对路径
-project_root = os.path.dirname(current_dir_path)
-
-log_file_path = os.path.join(project_root, Config().LOG_FILE)
+from base.config import Config, project_root
 
 
-def setup_logging(log_file=log_file_path):
+def setup_logging(name, log_file=os.path.join(project_root, 'logs', 'app.log')):
     # 创建日志目录
     os.makedirs(os.path.dirname(log_file), exist_ok=True)
     # 获取日志器
-    logger = logging.getLogger("EduRAG")
+    logger = logging.getLogger(name)
     # 设置日志级别
     logger.setLevel(logging.INFO)
     # print(f'logger.handlers-->{logger.handlers}')
@@ -50,4 +35,6 @@ def setup_logging(log_file=log_file_path):
     return logger
 
 # 初始化日志器
-logger = setup_logging()
+if __name__ == '__main__':
+    logger = setup_logging(__name__)
+    logger.info("开始初始化日志")
