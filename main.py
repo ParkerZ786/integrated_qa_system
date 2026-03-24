@@ -40,29 +40,29 @@ def main(query_mode=True, directory_path="data"):
         client = None # 标记客户端不可用
 
 
-    # 定义 LLM 调用函数 (仅在需要时定义和使用)
     def call_dashscope(prompt):
         if not client: # 检查客户端是否可用
             logger.error("LLM 客户端未初始化，无法调用 call_dashscope")
-            return f"错误: LLM客户端不可用"
+            yield f"错误: LLM客户端不可用"
+            return
         try:
             completion = client.chat.completions.create(
                 model=conf.LLM_MODEL,
                 messages=[
                     {"role": "system", "content": "你是一个有用的助手."},
                     {"role": "user", "content": prompt},
-                ]
-                # 可以添加 temperature 等参数
+                ],
+                stream=True # 开启流式输出
             )
-            # print(f'completion--》{completion}')
-            if completion.choices and completion.choices[0].message:
-                 return completion.choices[0].message.content
-            else:
-                 logger.error("LLM API 调用返回无效响应或空消息")
-                 return "错误: LLM返回无效响应"
+            
+            # 由于开启了 stream=True，completion 是一个生成器
+            for chunk in completion:
+                if chunk.choices and chunk.choices[0].delta.content:
+                    yield chunk.choices[0].delta.content
+                    
         except Exception as e:
             logger.error(f"LLM API (call_dashscope) 调用失败: {e}")
-            return f"错误: 调用LLM失败 - {e}"
+            yield f"错误: 调用LLM失败 - {e}"
 
     # print(call_dashscope(prompt='你是谁'))
     # 初始化 VectorStore
